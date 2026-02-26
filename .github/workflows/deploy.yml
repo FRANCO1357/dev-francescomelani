@@ -16,11 +16,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepara file da caricare
-        run: |
-          mkdir -p deploy
-          rsync -a --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='.env' --exclude='*.log' ./ deploy/
-
       - name: Deploy to Hostinger (FTP)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
@@ -28,4 +23,14 @@ jobs:
           username: ${{ secrets.HOSTINGER_FTP_USER }}
           password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
           server-dir: ${{ format('{0}/', secrets.HOSTINGER_FTP_REMOTE_DIR) }}
-          local-dir: ./deploy/
+          local-dir: ./
+          exclude: |
+            .git/
+            .github/
+            node_modules/
+            .env
+            .env.*
+            *.log
+            .gitignore
+          # Rimuove dal server file non presenti nel repo (template Hostinger, vecchia cartella deploy/)
+          dangerous-clean-slate: true
