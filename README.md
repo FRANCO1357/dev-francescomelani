@@ -58,8 +58,7 @@ Il deploy avviene con **GitHub Actions** tramite **FTP** (Hostinger spesso blocc
    - **Hostname** (es. `ftp.francescomelani.com` o quello indicato da Hostinger)
    - **Username** (es. `u705656439` o `tuouser@francescomelani.com`)
    - **Password** (quella dell’account FTP)
-4. La **cartella remota** per il sottodominio di solito è: `domains/francescomelani.com/public_html/dev`  
-   (oppure solo `public_html/dev` se il tuo account FTP ha come root la cartella del dominio). Controlla in **File Manager** il percorso della cartella del sottodominio e adattalo.
+4. La **cartella remota** per il sottodominio: se in Hostinger la “cartella per caricare” è `public_html`, allora usa solo **`dev`** (sei già dentro public_html). Altrimenti prova **`public_html/dev`**.
 
 ### 2.2 Secrets su GitHub (FTP)
 
