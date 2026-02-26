@@ -1,5 +1,5 @@
 # Deploy su dev.francescomelani.com (Hostinger) via FTP
-# Hostinger blocca SSH/SFTP dai server GitHub → usiamo FTP che funziona da ovunque.
+# Build Angular in app/ e carica l'output su Hostinger.
 # Si attiva su push sul branch main, oppure manualmente.
 
 name: Deploy to dev.francescomelani.com
@@ -16,6 +16,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dipendenze Angular
+        run: npm ci
+        working-directory: app
+
+      - name: Build Angular
+        run: npm run build
+        working-directory: app
+
       - name: Deploy to Hostinger (FTP)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
@@ -23,16 +38,5 @@ jobs:
           username: ${{ secrets.HOSTINGER_FTP_USER }}
           password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
           server-dir: ${{ format('{0}/', secrets.HOSTINGER_FTP_REMOTE_DIR) }}
-          local-dir: ./
-          # Pattern come da doc: https://github.com/SamKirkland/FTP-Deploy-Action#exclude-files
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/.github*
-            **/.github*/**
-            **/node_modules/**
-            **/.env
-            **/.env.*
-            **/*.log
-            **/.gitignore
+          local-dir: ./app/dist/app/browser/
           dangerous-clean-slate: true
