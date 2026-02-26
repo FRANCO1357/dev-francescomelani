@@ -27,5 +27,5 @@ jobs:
           server: ${{ secrets.HOSTINGER_FTP_SERVER }}
           username: ${{ secrets.HOSTINGER_FTP_USER }}
           password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
-          server-dir: ${{ secrets.HOSTINGER_FTP_REMOTE_DIR }}
+          server-dir: ${{ format('{0}/', secrets.HOSTINGER_FTP_REMOTE_DIR) }}
           local-dir: ./deploy/
