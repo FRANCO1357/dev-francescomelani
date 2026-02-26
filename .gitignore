@@ -1,0 +1,31 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Dependencies (se usi Node/npm)
+node_modules/
+.npm
+
+# Build output (se usi un bundler)
+dist/
+build/
+.next/
+out/
+deploy/
+
+# Env / secrets (mai committare)
+.env
+.env.local
+.env.*.local
+*.pem
+
+# Logs
+*.log
+npm-debug.log*
