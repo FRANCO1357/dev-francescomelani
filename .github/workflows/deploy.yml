@@ -1,12 +1,13 @@
-# Deploy su dev.francescomelani.com (Hostinger) via SFTP
-# Si attiva su push sul branch main, oppure manualmente
+# Deploy su dev.francescomelani.com (Hostinger) via FTP
+# Hostinger blocca SSH/SFTP dai server GitHub → usiamo FTP che funziona da ovunque.
+# Si attiva su push sul branch main, oppure manualmente.
 
 name: Deploy to dev.francescomelani.com
 
 on:
   push:
     branches: [main]
-  workflow_dispatch:  # Permette avvio manuale da GitHub Actions
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -20,23 +21,11 @@ jobs:
           mkdir -p deploy
           rsync -a --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='.env' --exclude='*.log' ./ deploy/
 
-      # Opzionale: build (decommenta e adatta se usi npm/yarn)
-      # - name: Setup Node
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: '20'
-      #     cache: 'npm'
-      # - name: Install & Build
-      #   run: npm ci && npm run build
-
-      - name: Deploy to Hostinger
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+      - name: Deploy to Hostinger (FTP)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          username: ${{ secrets.HOSTINGER_SSH_USER }}
-          server: ${{ secrets.HOSTINGER_SSH_HOST }}
-          port: ${{ secrets.HOSTINGER_SSH_PORT }}
-          ssh_private_key: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
-          local_path: './deploy/*'
-          remote_path: '/home/u705656439/domains/francescomelani.com/public_html/dev'
-          sftp_only: true
-          sftpArgs: '-o ConnectTimeout=10'
+          server: ${{ secrets.HOSTINGER_FTP_SERVER }}
+          username: ${{ secrets.HOSTINGER_FTP_USER }}
+          password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
+          server-dir: ${{ secrets.HOSTINGER_FTP_REMOTE_DIR }}
+          local-dir: ./deploy/

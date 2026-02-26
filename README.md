@@ -48,46 +48,32 @@ git push -u origin main
 
 ## 2. Deploy automatico su Hostinger
 
-Il deploy avviene con **GitHub Actions** tramite SFTP verso la cartella del sottodominio.
+Il deploy avviene con **GitHub Actions** tramite **FTP** (Hostinger spesso blocca SSH/SFTP dai server GitHub; l’FTP funziona da ovunque).
 
-### 2.1 Abilitare SSH su Hostinger
+### 2.1 Dati FTP su Hostinger
 
 1. Accedi a **hPanel** (Hostinger).
-2. **Advanced** → **SSH Access**.
-3. Abilita SSH e annota:
-   - **Host / IP**
-   - **Porta** (solitamente **65002** per hosting condiviso)
-   - **Username** (es. `u705656439`)
+2. Vai in **Files** → **FTP Accounts** (oppure **Advanced** → **FTP Accounts**).
+3. Usa l’account FTP principale oppure creane uno dedicato al deploy. Annota:
+   - **Hostname** (es. `ftp.francescomelani.com` o quello indicato da Hostinger)
+   - **Username** (es. `u705656439` o `tuouser@francescomelani.com`)
+   - **Password** (quella dell’account FTP)
+4. La **cartella remota** per il sottodominio di solito è: `domains/francescomelani.com/public_html/dev`  
+   (oppure solo `public_html/dev` se il tuo account FTP ha come root la cartella del dominio). Controlla in **File Manager** il percorso della cartella del sottodominio e adattalo.
 
-### 2.2 Chiave SSH per il deploy
-
-Sul tuo Mac:
-
-```bash
-ssh-keygen -t ed25519 -C "deploy-dev-francescomelani" -f ~/.ssh/hostinger_deploy -N ""
-```
-
-- **Pubblica:** `~/.ssh/hostinger_deploy.pub`  
-- **Privata:** `~/.ssh/hostinger_deploy`
-
-Aggiungi la **chiave pubblica** su Hostinger:
-
-- **hPanel** → **Advanced** → **SSH Access** → **SSH Keys**  
-- Incolla il contenuto di `~/.ssh/hostinger_deploy.pub` e salva.
-
-### 2.3 Secrets su GitHub
+### 2.2 Secrets su GitHub (FTP)
 
 Nel repository GitHub:
 
 1. **Settings** → **Secrets and variables** → **Actions**.
-2. **New repository secret** per ognuno di questi:
+2. **New repository secret** per ognuno di questi **4**:
 
-| Nome del secret              | Valore |
-|-----------------------------|--------|
-| `HOSTINGER_SSH_USER`        | Username SSH (es. `u705656439`) |
-| `HOSTINGER_SSH_HOST`        | Host/IP del server (es. `srv123.hostinger.com` o l’IP che vedi in SSH Access) |
-| `HOSTINGER_SSH_PORT`        | Porta SSH (es. `65002`) |
-| `HOSTINGER_SSH_PRIVATE_KEY`| Contenuto **completo** del file `~/.ssh/hostinger_deploy` (incluse le righe `-----BEGIN ...` e `-----END ...`). **Importante:** lascia una riga vuota alla fine. |
+| Nome del secret               | Valore |
+|------------------------------|--------|
+| `HOSTINGER_FTP_SERVER`       | Hostname FTP (es. `ftp.francescomelani.com`) |
+| `HOSTINGER_FTP_USER`         | Username FTP |
+| `HOSTINGER_FTP_PASSWORD`     | Password dell’account FTP |
+| `HOSTINGER_FTP_REMOTE_DIR`   | Cartella remota del sottodominio (es. `domains/francescomelani.com/public_html/dev` oppure `public_html/dev`) |
 
 Dopo aver configurato i 4 secrets, ogni **push su `main`** (e l’avvio manuale del workflow) farà il deploy nella directory del sottodominio.
 
