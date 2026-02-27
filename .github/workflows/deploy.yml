@@ -1,6 +1,7 @@
-# Deploy su dev.francescomelani.com (Hostinger) via FTP
-# Build Angular in app/ e carica l'output su Hostinger.
+# Deploy su dev.francescomelani.com (Hostinger) via SSH/SFTP
+# Build Angular in app/ e carica l'output su Hostinger (connessione cifrata).
 # Si attiva su push sul branch main, oppure manualmente.
+# Secrets richiesti: HOSTINGER_SSH_USER, HOSTINGER_SSH_HOST, HOSTINGER_SSH_PORT, HOSTINGER_SSH_PRIVATE_KEY
 
 name: Deploy to dev.francescomelani.com
 
@@ -31,12 +32,14 @@ jobs:
         run: npm run build
         working-directory: app
 
-      - name: Deploy to Hostinger (FTP)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      - name: Deploy to Hostinger (SFTP)
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
         with:
-          server: ${{ secrets.HOSTINGER_FTP_SERVER }}
-          username: ${{ secrets.HOSTINGER_FTP_USER }}
-          password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
-          server-dir: ${{ format('{0}/', secrets.HOSTINGER_FTP_REMOTE_DIR) }}
-          local-dir: ./app/dist/app/browser/
-          dangerous-clean-slate: true
+          username: ${{ secrets.HOSTINGER_SSH_USER }}
+          server: ${{ secrets.HOSTINGER_SSH_HOST }}
+          port: ${{ secrets.HOSTINGER_SSH_PORT }}
+          ssh_private_key: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+          local_path: "./app/dist/app/browser/*"
+          remote_path: "/home/u705656439/domains/francescomelani.com/public_html/dev"
+          sftp_only: true
+          sftpArgs: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=20"
