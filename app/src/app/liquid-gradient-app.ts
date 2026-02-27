@@ -1,3 +1,7 @@
+/**
+ * Interactive gradient background (WebGL/Three.js).
+ * Adapted and customized for dev.francescomelani.com.
+ */
 import * as THREE from 'three';
 
 export class TouchTexture {
@@ -5,7 +9,7 @@ export class TouchTexture {
   width = this.size;
   height = this.size;
   maxAge = 64;
-  radius = 0.25 * this.size;
+  radius = 0.22 * this.size;
   speed = 1 / this.maxAge;
   trail: Array<{ x: number; y: number; age: number; force: number; vx: number; vy: number }> = [];
   last: { x: number; y: number } | null = null;

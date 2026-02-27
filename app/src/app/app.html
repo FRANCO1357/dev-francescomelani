@@ -1,25 +1,25 @@
 <div #canvasContainer class="canvas-container"></div>
 
-<h1 class="heading">Liquid Gradient</h1>
+<h1 class="heading">Fluid Canvas</h1>
 
 <div class="color-controls">
   @for (s of [1,2,3,4,5]; track s) {
     <button type="button" class="color-btn" [class.active]="activeScheme === s" (click)="setScheme(s)">
-      Scheme {{ s }}
+      Palette {{ s }}
     </button>
   }
 </div>
 
-<button type="button" class="toggle-adjuster-btn" (click)="togglePanel()">Adjust Colors</button>
+<button type="button" class="toggle-adjuster-btn" (click)="togglePanel()">Customize</button>
 
 <div class="color-adjuster-panel" [class.open]="panelOpen" id="colorAdjusterPanel">
   <div class="color-adjuster-header">
-    <h3 class="color-adjuster-title">Color Adjuster</h3>
+    <h3 class="color-adjuster-title">Palette</h3>
     <button type="button" class="color-adjuster-close" (click)="closePanel()">×</button>
   </div>
   @for (i of [1,2,3,4,5,6]; track i) {
     <div class="color-picker-group">
-      <div class="color-picker-label"><span>Color {{ i }}</span></div>
+      <div class="color-picker-label"><span>Tone {{ i }}</span></div>
       <div class="color-picker-wrapper">
         <input type="color" class="color-picker-input" [id]="'colorPicker'+i" [value]="getColorHex(i)" (input)="onColorPick(i, $event)">
         <input type="text" class="color-value-display" [id]="'colorValue'+i" [value]="getColorHex(i)" readonly>
@@ -28,12 +28,12 @@
     </div>
   }
   <div class="color-adjuster-actions">
-    <button type="button" class="export-btn" (click)="exportAll()">Export All Colors</button>
+    <button type="button" class="export-btn" (click)="exportAll()">Export palette</button>
   </div>
 </div>
 
 <footer class="footer">
-  <a href="https://madebybeings.com" target="_blank" rel="noopener noreferrer">Made By Beings</a>
+  <a href="https://dev.francescomelani.com" target="_blank" rel="noopener noreferrer">dev.francescomelani.com</a>
 </footer>
 
 <div class="custom-cursor" #customCursor id="customCursor"></div>

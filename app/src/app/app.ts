@@ -117,7 +117,7 @@ export class App implements AfterViewInit, OnDestroy {
 
   exportAll(): void {
     const colors = [1, 2, 3, 4, 5, 6].map((i) => this.getColorHex(i));
-    const text = `Color Scheme:\n${colors.map((c, i) => `Color ${i + 1}: ${c}`).join('\n')}\n\nHex Array: [${colors.map((c) => `"${c}"`).join(', ')}]`;
+    const text = `Palette:\n${colors.map((c, i) => `Tone ${i + 1}: ${c}`).join('\n')}\n\nHex: [${colors.map((c) => `"${c}"`).join(', ')}]`;
     navigator.clipboard.writeText(text);
   }
 }
