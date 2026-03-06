@@ -97,8 +97,8 @@ Dopo aver configurato i 4 secrets, ogni **push su `main`** (e l'avvio manuale de
    git commit -m "Descrizione delle modifiche"
    git push origin main
    ```
-3. **Deploy automatico:** GitHub Actions carica i file su  
-   `dev.francescomelani.com` (cartella `/home/u705656439/domains/francescomelani.com/public_html/dev`).
+3. **Deploy automatico:** GitHub Actions carica **frontend** (build Angular) e **backend** (Laravel) su  
+   `dev.francescomelani.com` (cartella `public_html/dev`; il backend in `public_html/dev/backend`).
 4. Controlla l’esito in **Actions** nel tab del repository GitHub.
 
 ---
@@ -137,9 +137,31 @@ Il backend Laravel si trova in **`backend/`** e può essere collegato al databas
    ```
 4. Per provare in locale: `php artisan serve` e apri http://localhost:8000. La route **http://localhost:8000/db-check** restituisce un JSON con l'esito della connessione al DB.
 
-### 4.3 Configurare il database su Hostinger (dopo il deploy)
+### 4.3 Configurare il backend su Hostinger (dopo il deploy)
 
-Sul server Hostinger, nella cartella del progetto, crea o modifica **`backend/.env`** con le stesse variabili `DB_*` (usa i dati del database creato in hPanel). Non mettere il file `.env` nel repository: va creato direttamente sul server (es. da File Manager o via SSH).
+Il deploy carica anche la cartella **backend** in `public_html/dev/backend`. Il file **`.env`** non viene mai caricato (è in .gitignore), quindi va creato a mano sul server:
+
+1. In **hPanel** → **File Manager** apri la cartella **`public_html` → `dev` → `backend`** (deve esserci dopo un deploy con il nuovo workflow).
+2. Clicca **+ New file**, nome file: **`.env`**.
+3. Incolla un contenuto simile (adatta `APP_KEY` se necessario; in produzione usa `APP_DEBUG=false`):
+
+   ```env
+   APP_NAME=Laravel
+   APP_ENV=production
+   APP_KEY=base64:ce5SF8gaqMrEjY/E3f1aX94c4M2PCL5ZeDuhxkA8frs=
+   APP_DEBUG=false
+   APP_URL=https://dev.francescomelani.com
+
+   DB_CONNECTION=mysql
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_DATABASE=u705656439_dev_francesco
+   DB_USERNAME=u705656439_dev_francesco
+   DB_PASSWORD=Dev_francesco1
+   ```
+
+4. Salva. Da quel momento Laravel sul server userà il database MySQL di Hostinger. **Verifica connessione DB:** apri `https://dev.francescomelani.com/backend/public/db-check`; se vedi `{"ok":true,"database":"u705656439_dev_francesco",...}` la connessione è attiva. Su alcuni piani Hostinger potrebbe essere necessario puntare un sottodominio (es. `api.dev.francescomelani.com`) alla cartella `backend/public` da hPanel.
+
 
 ---
 

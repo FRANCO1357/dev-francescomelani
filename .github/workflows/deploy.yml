@@ -32,7 +32,16 @@ jobs:
         run: npm run build
         working-directory: app
 
-      - name: Deploy to Hostinger (SFTP)
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+
+      - name: Install dipendenze Laravel (backend)
+        run: composer install --no-dev --optimize-autoloader
+        working-directory: backend
+
+      - name: Deploy frontend (Angular) to Hostinger
         uses: wlixcc/SFTP-Deploy-Action@v1.2.6
         with:
           username: ${{ secrets.HOSTINGER_SSH_USER }}
@@ -41,5 +50,17 @@ jobs:
           ssh_private_key: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
           local_path: "./app/dist/app/browser/*"
           remote_path: "/home/u705656439/domains/francescomelani.com/public_html/dev"
+          sftp_only: true
+          sftpArgs: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=20"
+
+      - name: Deploy backend (Laravel) to Hostinger
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+        with:
+          username: ${{ secrets.HOSTINGER_SSH_USER }}
+          server: ${{ secrets.HOSTINGER_SSH_HOST }}
+          port: ${{ secrets.HOSTINGER_SSH_PORT }}
+          ssh_private_key: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+          local_path: "./backend"
+          remote_path: "/home/u705656439/domains/francescomelani.com/public_html/dev/backend"
           sftp_only: true
           sftpArgs: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=20"
