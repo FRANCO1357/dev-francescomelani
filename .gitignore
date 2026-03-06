@@ -13,6 +13,14 @@ Thumbs.db
 node_modules/
 .npm
 
+# Laravel (backend/)
+backend/vendor/
+backend/node_modules/
+backend/.env
+backend/public/hot
+backend/public/storage
+backend/storage/*.key
+
 # Build output (se usi un bundler)
 dist/
 build/

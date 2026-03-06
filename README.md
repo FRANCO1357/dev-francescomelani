@@ -46,21 +46,31 @@ git push -u origin main
 
 ---
 
-## 2. Deploy automatico su Hostinger
+## 2. Deploy automatico su Hostinger (SSH/SFTP)
 
-Il deploy avviene con **GitHub Actions** tramite **FTP** (Hostinger spesso blocca SSH/SFTP dai server GitHub; l’FTP funziona da ovunque).
+Il deploy avviene con **GitHub Actions** tramite **SSH/SFTP** (connessione cifrata, più sicura dell'FTP).
 
-### 2.1 Dati FTP su Hostinger
+### 2.1 Abilitare SSH e dati su Hostinger
 
 1. Accedi a **hPanel** (Hostinger).
-2. Vai in **Files** → **FTP Accounts** (oppure **Advanced** → **FTP Accounts**).
-3. Usa l’account FTP principale oppure creane uno dedicato al deploy. Annota:
-   - **Hostname** (es. `ftp.francescomelani.com` o quello indicato da Hostinger)
-   - **Username** (es. `u705656439` o `tuouser@francescomelani.com`)
-   - **Password** (quella dell’account FTP)
-4. La **cartella remota** per il sottodominio: se in Hostinger la “cartella per caricare” è `public_html`, allora usa solo **`dev`** (sei già dentro public_html). Altrimenti prova **`public_html/dev`**.
+2. Vai in **Advanced** → **SSH Access**.
+3. Abilita SSH (se non è già attivo) e annota:
+   - **Hostname** (o IP del server)
+   - **Porta** (solitamente **65002** per hosting condiviso)
+   - **Username** (es. `u705656439`)
 
-### 2.2 Secrets su GitHub (FTP)
+### 2.2 Chiave SSH per il deploy
+
+Sul tuo computer genera una chiave dedicata al deploy:
+
+```bash
+ssh-keygen -t ed25519 -C "deploy-dev-francescomelani" -f ~/.ssh/hostinger_deploy -N ""
+```
+
+- **Chiave pubblica:** `~/.ssh/hostinger_deploy.pub` → da aggiungere su Hostinger (**SSH Access** → **SSH Keys**).
+- **Chiave privata:** `~/.ssh/hostinger_deploy` → da mettere nei GitHub Secrets (mai condividerla).
+
+### 2.3 Secrets su GitHub (SSH)
 
 Nel repository GitHub:
 
@@ -69,12 +79,12 @@ Nel repository GitHub:
 
 | Nome del secret               | Valore |
 |------------------------------|--------|
-| `HOSTINGER_FTP_SERVER`       | Hostname FTP (es. `ftp.francescomelani.com`) |
-| `HOSTINGER_FTP_USER`         | Username FTP |
-| `HOSTINGER_FTP_PASSWORD`     | Password dell’account FTP |
-| `HOSTINGER_FTP_REMOTE_DIR`   | Cartella remota del sottodominio (es. `domains/francescomelani.com/public_html/dev` oppure `public_html/dev`) |
+| `HOSTINGER_SSH_USER`         | Username SSH (es. `u705656439`) |
+| `HOSTINGER_SSH_HOST`         | Hostname o IP del server (da SSH Access) |
+| `HOSTINGER_SSH_PORT`         | Porta SSH (es. `65002`) |
+| `HOSTINGER_SSH_PRIVATE_KEY`  | Contenuto **completo** del file `~/.ssh/hostinger_deploy` (incluse le righe `-----BEGIN ...` e `-----END ...`). Lascia una riga vuota alla fine. |
 
-Dopo aver configurato i 4 secrets, ogni **push su `main`** (e l’avvio manuale del workflow) farà il deploy nella directory del sottodominio.
+Dopo aver configurato i 4 secrets, ogni **push su `main`** (e l'avvio manuale del workflow) farà il deploy nella directory del sottodominio tramite SFTP.
 
 ---
 
@@ -93,17 +103,57 @@ Dopo aver configurato i 4 secrets, ogni **push su `main`** (e l’avvio manuale 
 
 ---
 
-## 4. Deploy manuale
+## 4. Laravel e database Hostinger
+
+Il backend Laravel si trova in **`backend/`** e può essere collegato al database MySQL di Hostinger.
+
+### 4.1 Creare il database su Hostinger
+
+1. In **hPanel** → **Databases** → **MySQL Databases**.
+2. Crea un nuovo database (es. `u705656439_dev`).
+3. Crea un utente MySQL e assegnalo al database (con tutti i privilegi).
+4. Annota: **host** (solitamente `localhost`), **nome database**, **username**, **password**. Su Hostinger l'host MySQL è spesso `localhost`; il nome utente è nel formato `u705656439_nomeutente`.
+
+**Credenziali DB per questo progetto:** username `dev_francesco`, password `Dev_francesco1`. Usale in `backend/.env` (`DB_USERNAME`, `DB_PASSWORD`) e nel file `.env` su Hostinger dopo il deploy.
+
+### 4.2 Configurare Laravel in locale
+
+1. Installa PHP (≥ 8.2) e [Composer](https://getcomposer.org/) sul tuo Mac.
+2. Dalla root del progetto:
+   ```bash
+   cd backend
+   cp .env.example .env
+   php artisan key:generate
+   composer install
+   ```
+3. Modifica **`backend/.env`** e imposta le variabili del database:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_DATABASE=nome_database_hostinger
+   DB_USERNAME=utente_hostinger
+   DB_PASSWORD=password_hostinger
+   ```
+4. Per provare in locale: `php artisan serve` e apri http://localhost:8000. La route **http://localhost:8000/db-check** restituisce un JSON con l'esito della connessione al DB.
+
+### 4.3 Configurare il database su Hostinger (dopo il deploy)
+
+Sul server Hostinger, nella cartella del progetto, crea o modifica **`backend/.env`** con le stesse variabili `DB_*` (usa i dati del database creato in hPanel). Non mettere il file `.env` nel repository: va creato direttamente sul server (es. da File Manager o via SSH).
+
+---
+
+## 5. Deploy manuale
 
 - Vai su **Actions** → workflow **“Deploy to dev.francescomelani.com”** → **Run workflow** → **Run workflow**.
 
 ---
 
-## 5. Prossimi passi (opzionale)
+## 6. Prossimi passi (opzionale)
 
 - Se userai **Node/npm** (es. React, Vite, Next.js):
   - Apri `.github/workflows/deploy.yml`.
   - Decommenta e adatta la sezione **Setup Node** e **Install & Build**.
   - Imposta `local_path` sulla cartella di build (es. `./dist/*` o `./build/*`) invece di `./*`.
 
-Se vuoi, al prossimo step possiamo configurare proprio un progetto Node/React/Vite in questa repo.
+Se vuoi, al prossimo step possiamo configurare il **deploy di Laravel** su dev.francescomelani.com (document root verso `backend/public` e `composer install` in pipeline).
