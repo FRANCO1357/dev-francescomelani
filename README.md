@@ -258,3 +258,78 @@ I comandi `php artisan migrate` e `php artisan db:seed` vanno eseguiti **sul ser
   - Imposta `local_path` sulla cartella di build (es. `./dist/*` o `./build/*`) invece di `./*`.
 
 Se vuoi, al prossimo step possiamo configurare il **deploy di Laravel** su dev.francescomelani.com (document root verso `backend/public` e `composer install` in pipeline).
+
+---
+
+## 8. Duplicare questo progetto per un nuovo sottodominio (es. freezer.francescomelani.com)
+
+Questa sezione è utile quando vuoi usare **questo progetto come template** per un’altra app (nuova repo, altro sottodominio, es. **freezer.francescomelani.com**).
+
+### 8.1 Copiare il progetto in una nuova cartella
+
+- Copia l’intera cartella del progetto (es. `dev-francescomelani`) in una nuova directory (es. `freezer-francescomelani`).
+- Elimina la cartella **`.git`** nella nuova directory (così parti da zero con un nuovo repo):
+  ```bash
+  cd /path/to/freezer-francescomelani
+  rm -rf .git
+  git init
+  ```
+
+### 8.2 Nuovo repository GitHub
+
+- Crea un **nuovo repository** su GitHub (es. `freezer-francescomelani`), senza README.
+- Collega la nuova cartella e fai il primo push:
+  ```bash
+  git remote add origin https://github.com/TUO_USER/freezer-francescomelani.git
+  git branch -M main
+  git add .
+  git commit -m "Setup da template dev.francescomelani.com"
+  git push -u origin main
+  ```
+
+### 8.3 Sottodominio e cartella su Hostinger
+
+- In **hPanel** → **Domains** (o **Sottodomini**): crea il sottodominio **freezer.francescomelani.com** e punta la cartella (es. **`public_html/freezer`**). Annota il percorso completo, es.  
+  `/home/u705656439/domains/francescomelani.com/public_html/freezer`
+- SSH e deploy useranno questo percorso al posto di `.../dev`.
+
+### 8.4 Cosa modificare nel nuovo progetto
+
+Sostituisci **dev** / **dev.francescomelani.com** con **freezer** / **freezer.francescomelani.com** (e, se serve, il nome repo) nei file sotto.
+
+| File | Cosa cambiare |
+|------|----------------|
+| **README.md** | Titolo, URL, percorso Hostinger (es. `freezer.francescomelani.com`, `public_html/freezer`). |
+| **.github/workflows/deploy.yml** | `name:` (es. "Deploy to freezer.francescomelani.com"); `remote_path:` in tutti gli step (es. `.../public_html/freezer`); negli script SSH il path (es. `.../public_html/freezer`). |
+| **app/src/environments/environment.prod.ts** | `apiUrl: '/backend/public/api'` (uguale se la struttura backend è identica); se il backend sta sotto un’altra path, adatta. |
+| **app/src/index.html** | `<title>` (es. "Freezer"). |
+| **backend/.env.example** e **backend/.env.hostinger.example** | `APP_URL=https://freezer.francescomelani.com`; commenti e, se usi un DB dedicato, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`. |
+| **backend/config/cors.php** | Aggiungi in `allowed_origins`: `https://freezer.francescomelani.com` e `http://freezer.francescomelani.com`. |
+
+Cerca nel progetto le stringhe **dev.francescomelani.com** e **/dev** (path) e aggiornale con **freezer.francescomelani.com** e **/freezer** dove appropriato.
+
+### 8.5 GitHub Secrets (deploy)
+
+- Se il **nuovo repo** usa lo **stesso account Hostinger** (stesso utente SSH), puoi riusare gli stessi **4 secrets** nel nuovo repository:  
+  `HOSTINGER_SSH_USER`, `HOSTINGER_SSH_HOST`, `HOSTINGER_SSH_PORT`, `HOSTINGER_SSH_PRIVATE_KEY`.
+- Se preferisci una chiave dedicata al solo progetto freezer: genera una nuova chiave SSH, aggiungila in Hostinger (SSH Access → SSH Keys) e imposta i 4 secrets nel **nuovo** repo con i nuovi valori.
+
+### 8.6 Database (Laravel) per il nuovo progetto
+
+- In **hPanel** → **Databases** → **MySQL**: crea un **nuovo database** (e utente) per il progetto freezer (es. `u705656439_freezer`).
+- Nel nuovo progetto, in **backend/.env** (locale e, dopo il deploy, sul server in `public_html/freezer/backend/.env`) imposta `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` con i dati del nuovo DB.
+- Sul server (SSH), dalla cartella `.../public_html/freezer/backend` esegui con PHP 8.4:
+  ```bash
+  /opt/alt/php84/usr/bin/php artisan migrate --force
+  /opt/alt/php84/usr/bin/php artisan db:seed --force
+  ```
+  (e crea il file **.env** in `public_html/freezer/backend` come in § 4.3, con `APP_URL=https://freezer.francescomelani.com`).
+
+### 8.7 Checklist rapida
+
+- [ ] Progetto copiato, `.git` rimosso, `git init`, nuovo remote e push.
+- [ ] Sottodominio **freezer.francescomelani.com** creato su Hostinger, cartella es. `public_html/freezer`.
+- [ ] README, deploy.yml, environment.prod.ts, index.html, .env.example / .env.hostinger.example, cors.php aggiornati con freezer / nuovo URL.
+- [ ] Secrets Actions configurati nel nuovo repo (stessi 4 di Hostinger o nuova chiave).
+- [ ] Nuovo database MySQL creato; .env sul server con `APP_URL` e credenziali DB; migrate e seed eseguiti sul server.
+- [ ] Deploy eseguito (push su main); .htaccess e .env presenti in `public_html/freezer` e `public_html/freezer/backend`.

@@ -1,10 +1,21 @@
-<div class="area-page">
-  <header class="header">
-    <h1>Area riservata</h1>
-    <p class="user">Ciao, {{ user?.name ?? user?.email ?? 'Utente' }}</p>
-    <button type="button" class="btn-logout" (click)="logout()">Esci</button>
-  </header>
-  <main class="content">
-    <p>Benvenuto nell’area protetta. Solo gli utenti autenticati possono vedere questa pagina.</p>
+<div class="min-vh-100 bg-light">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <span class="navbar-brand mb-0">Area riservata</span>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-white text-opacity-75 small">Ciao, {{ user?.name ?? user?.email ?? 'Utente' }}</span>
+        <button type="button" class="btn btn-outline-light btn-sm" (click)="logout()">Esci</button>
+      </div>
+    </div>
+  </nav>
+  <main class="container py-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h5 card-title mb-3">Benvenuto</h2>
+        <p class="card-text text-muted mb-0">
+          Benvenuto nell’area protetta. Solo gli utenti autenticati possono vedere questa pagina.
+        </p>
+      </div>
+    </div>
   </main>
 </div>
